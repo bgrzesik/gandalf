@@ -1,0 +1,21 @@
+[package]
+name = "gandalfd"
+version = "0.1.0"
+authors = ["Bartłomiej <grzechovsky@gmail.com>"]
+build = "build.rs"
+
+[dependencies]
+bincode = "0.7.0"
+serde = "=0.9.8"
+serde_derive = "=0.9.8"
+serde_json = "=0.9.8"
+hyper = "0.10.9"
+gandalf = { path = ".." }
+
+[target.'cfg(windows)'.dependencies]
+winapi = "0.2.8"
+user32-sys = "0.2.0"
+kernel32-sys = "0.2.2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.21"

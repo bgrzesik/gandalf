@@ -1,0 +1,11 @@
+[package]
+name = "gandalfctl"
+version = "0.1.0"
+authors = ["Bartłomiej <grzechovsky@gmail.com>"]
+
+[dependencies]
+clap = "2.22.2"
+bincode = "1.0.0-alpha4"
+serde = "0.9.9"
+serde_derive = "0.9.9"
+gandalf = { path = ".." }

@@ -1,0 +1,9 @@
+[package]
+name = "gandalf"
+version = "0.1.0"
+authors = ["Bartłomiej <grzechovsky@gmail.com>"]
+
+[dependencies]
+bincode = "1.0.0-alpha4"
+serde = "0.9.8"
+serde_derive = "0.9.8"
