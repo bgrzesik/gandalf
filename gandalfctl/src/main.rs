@@ -61,29 +61,28 @@ fn main() {
                                              .about("Shutdowns daemons"))
                       .get_matches();
 
-    let msg: IncommingMessage;
-    if let Some(matches) = matches.subcommand_matches("summon") {
-        msg = IncommingMessage::Summon { what: matches.value_of("cmd").unwrap().to_string(), };
-    } else if let Some(matches) = matches.subcommand_matches("cmd") {
-        let cmd = matches.value_of("cmd").unwrap().to_string();
-        msg = IncommingMessage::Summon { what: format!("cmd /C {:?}", cmd), };
-    } else if let Some(matches) = matches.subcommand_matches("url") {
-        msg = IncommingMessage::Url(matches.value_of("url").unwrap().to_string());
-    } else if let Some(matches) = matches.subcommand_matches("yte") {
-        msg = IncommingMessage::Url(format!("https://www.youtube.com/embed/{}?rel=0&autoplay=1", matches.value_of("yt").unwrap().to_string()));
-    } else if let Some(matches) = matches.subcommand_matches("yt") {
-        msg = IncommingMessage::Yt { vid: matches.value_of("yt").unwrap().to_string() };
-    } else if let Some(_) = matches.subcommand_matches("blank") {
-        msg = IncommingMessage::Url("about:blank".to_owned());
-    } else if let Some(_) = matches.subcommand_matches("gandalf") {
-        msg = IncommingMessage::Gandalf;
-    } else if let Some(_) = matches.subcommand_matches("disappear") {
-        msg = IncommingMessage::Disappear;
-    } else if let Some(_) = matches.subcommand_matches("retreat") {
-        msg = IncommingMessage::Retreat;
-    } else {
-        panic!("unknown subcommend");
-    }
+    let msg: IncommingMessage = match matches.subcommand() {
+        ("summon", Some(matches)) => {
+            IncommingMessage::Summon { what: matches.value_of("cmd").unwrap().to_string(), }
+        },
+        ("cmd", Some(matches)) => {
+            let cmd = matches.value_of("cmd").unwrap().to_string();
+            IncommingMessage::Summon { what: format!("cmd /C {:?}", cmd), }
+        },
+        ("url", Some(matches)) => {
+            IncommingMessage::Url(matches.value_of("url").unwrap().to_string())
+        },
+        ("yte", Some(matches)) => {
+            let vid = matches.value_of("yt").unwrap().to_string();
+            IncommingMessage::Url(format!("https://www.youtube.com/embed/{}?rel=0&autoplay=1", vid))
+        },
+        ("yt", Some(matches)) => IncommingMessage::Yt { vid: matches.value_of("yt").unwrap().to_string() },
+        ("blank", Some(matches)) => IncommingMessage::Url("about:blank".to_owned()),
+        ("gandalf", Some(matches)) => IncommingMessage::Gandalf,
+        ("disappear", Some(matches)) => IncommingMessage::Disappear,
+        ("retreat", Some(matches)) => IncommingMessage::Retreat,
+        _ => unimplemented!(),
+    };
 
     let send_socket = (matches.value_of("ip").unwrap_or("237.77.7.77"), 23441);
 
