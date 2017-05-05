@@ -10,6 +10,7 @@ serde = "=0.9.8"
 serde_derive = "=0.9.8"
 serde_json = "=0.9.8"
 hyper = "0.10.9"
+pnet = "0.17.1"
 gandalf = { path = ".." }
 
 [target.'cfg(windows)'.dependencies]

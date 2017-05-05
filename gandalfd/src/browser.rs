@@ -14,7 +14,6 @@ pub enum Error {
 
 pub struct Browser {
     client: self::hyper::client::Client,
-    // child: ::std::process::Child,
     child: process::Process,
     session_id: Option<String>,
 }
@@ -22,31 +21,17 @@ pub struct Browser {
 impl Browser {
 
     pub fn new() -> Browser {
-        use std::process::Command;
         use self::hyper::client::{Client};
         use process::Process;
 
-        Browser { client: Client::new(), child: Process::start("chromedriver --silent", false).unwrap(), session_id: None }
-
-        // let child = Command::new("chromedriver")
-        //     .arg("--port=9515")
-        //     .spawn();
-        // 
-        // return match child {
-        //     Ok(child) => Ok(Browser {
-        //         client: Client::new(),
-        //         child: child,
-        //         session_id: None,
-        //     }),
-        //     Err(err) => Err(Error::IoError(err))
-        // };  
+        Browser { client: Client::new(), child: Process::start("chromedriver --silent --port=9515", false).unwrap(), session_id: None }
     }
 
     fn req(&mut self, method: hyper::method::Method, url: &str, body: &str) -> Result<String, Error> {
         use ::std::io::Read;
 
         println!("{:?} {} {}", method, url, body);
-        let mut res = self.client.request(method, url)
+        let res = self.client.request(method, url)
             .body(body)
             .send();
         
@@ -151,6 +136,8 @@ impl Browser {
         };
 
         let res = self.req(Delete, url.as_str(), "");
+        self.session_id = None;
+        
         match res {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
@@ -217,7 +204,8 @@ impl Browser {
 
 impl ::std::ops::Drop for Browser {
     fn drop(&mut self) {
-        self.hide();
+        let _ = self.hide();
+        drop(&mut self.child);
     }
 }
 

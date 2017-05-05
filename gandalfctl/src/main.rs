@@ -2,9 +2,10 @@
 extern crate gandalf;
 extern crate bincode;
 extern crate clap;
+extern crate pnet;
 
 use gandalf::IncommingMessage;
-use bincode::{serialize, SizeLimit, Infinite};
+use bincode::{serialize, Infinite};
 use std::net;
 use clap::{App, Arg, SubCommand, AppSettings};
 
@@ -19,8 +20,7 @@ fn main() {
                       .arg(Arg::with_name("ip")
                                .short("I")
                                .long("ip")
-                               .takes_value(true)
-                               .required(true))
+                               .takes_value(true))
                       .subcommand(SubCommand::with_name("summon")
                                              .about("Summons proccess")
                                              .arg(Arg::with_name("cmd")
@@ -73,7 +73,7 @@ fn main() {
         msg = IncommingMessage::Url(format!("https://www.youtube.com/embed/{}?rel=0&autoplay=1", matches.value_of("yt").unwrap().to_string()));
     } else if let Some(matches) = matches.subcommand_matches("yt") {
         msg = IncommingMessage::Yt { vid: matches.value_of("yt").unwrap().to_string() };
-    } else if let Some(matches) = matches.subcommand_matches("blank") {
+    } else if let Some(_) = matches.subcommand_matches("blank") {
         msg = IncommingMessage::Url("about:blank".to_owned());
     } else if let Some(_) = matches.subcommand_matches("gandalf") {
         msg = IncommingMessage::Gandalf;
@@ -85,7 +85,7 @@ fn main() {
         panic!("unknown subcommend");
     }
 
-    let send_socket = (matches.value_of("ip").unwrap(), 23441);
+    let send_socket = (matches.value_of("ip").unwrap_or("237.77.7.77"), 23441);
 
     let buf = serialize(&msg, Infinite).expect("Unable to serialize message");
     let socket = net::UdpSocket::bind(BIND_SOCKET).expect("Unable to bind socket 0.0.0.0:23441");
