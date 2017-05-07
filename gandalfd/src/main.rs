@@ -21,17 +21,19 @@ pub struct Summoner {
 }
 
 impl Summoner {
-    
-    pub fn new() -> Summoner {
-        Summoner { child: None, browser: browser::Browser::new() }
+    pub fn new() -> Self {
+        Summoner {
+            child: None,
+            browser: browser::Browser::new(),
+        }
     }
 
     pub fn disappear(&mut self) {
-            if let Some(ref child) = self.child {
+        if let Some(ref child) = self.child {
             drop(child);
         } else if self.browser.session_active() {
             let _ = self.browser.hide();
-        } 
+        }
 
         self.child = None;
     }
@@ -65,7 +67,6 @@ impl Summoner {
 
         let _ = self.browser.yt(url);
     }
-
 }
 
 impl std::ops::Drop for Summoner {
@@ -76,13 +77,15 @@ impl std::ops::Drop for Summoner {
 
 fn main() {
     use gandalf::IncommingMessage;
-    use bincode::{deserialize};
+    use bincode::deserialize;
     use std::net::{UdpSocket, IpAddr, Ipv4Addr};
     use pnet::datalink::interfaces;
 
     #[cfg(build = "release")]
     #[cfg(target_os = "windows")]
-    unsafe { kernel32::FreeConsole(); }
+    unsafe {
+        kernel32::FreeConsole();
+    }
 
     let socket = UdpSocket::bind(BIND_SOCKET).expect("Unable to bind socket 0.0.0.0:23441");
     let multicast_ip = Ipv4Addr::new(237, 77, 7, 77);
@@ -105,12 +108,12 @@ fn main() {
         let msg: IncommingMessage = match socket.recv_from(&mut buf) {
             Ok((size, src_addr)) => {
                 println!("RECV {} FROM {:?}", size, src_addr);
-                
+
                 match deserialize(&buf[..size]) {
                     Ok(msg) => msg,
                     Err(err) => panic!("Unable to deserialize. {:?}", err),
                 }
-            },
+            }
             Err(..) => panic!("Unable to recv from socket 0.0.0.0:23441"),
         };
 

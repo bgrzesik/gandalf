@@ -19,22 +19,27 @@ pub struct Browser {
 }
 
 impl Browser {
-
-    pub fn new() -> Browser {
-        use self::hyper::client::{Client};
+    pub fn new() -> Self {
+        use self::hyper::client::Client;
         use process::Process;
 
-        Browser { client: Client::new(), child: Process::start("chromedriver --silent --port=9515", false).unwrap(), session_id: None }
+        Browser {
+            client: Client::new(),
+            child: Process::start("chromedriver --silent --port=9515", false).unwrap(),
+            session_id: None,
+        }
     }
 
-    fn req(&mut self, method: hyper::method::Method, url: &str, body: &str) -> Result<String, Error> {
-        use ::std::io::Read;
+    fn req(&mut self,
+           method: hyper::method::Method,
+           url: &str,
+           body: &str)
+           -> Result<String, Error> {
+        use std::io::Read;
 
         println!("{:?} {} {}", method, url, body);
-        let res = self.client.request(method, url)
-            .body(body)
-            .send();
-        
+        let res = self.client.request(method, url).body(body).send();
+
         println!("SENT");
 
         match res {
@@ -46,11 +51,11 @@ impl Browser {
 
                 println!("RESPONSE {}", buf);
                 Ok(buf)
-            },
+            }
             Err(err) => {
                 println!("ERROR {}", err);
                 Err(Error::HyperError(err))
-            },
+            }
         }
     }
 
@@ -88,17 +93,21 @@ impl Browser {
             }"#);
 
         match res {
-            Ok(res) => match serde_json::from_str(&res){
-                Ok(Value::Object(val)) => match val["sessionId"] { 
-                    Value::String(ref session_id) => {
-                        self.session_id = Some(session_id.to_owned());
-                        println!("GOT SESSION {:?}", self.session_id);
-                        Ok(())
-                    },
+            Ok(res) => {
+                match serde_json::from_str(&res) {
+                    Ok(Value::Object(val)) => {
+                        match val["sessionId"] { 
+                            Value::String(ref session_id) => {
+                                self.session_id = Some(session_id.to_owned());
+                                println!("GOT SESSION {:?}", self.session_id);
+                                Ok(())
+                            }
+                            _ => Err(Error::MsgError(res)),
+                        }
+                    }
                     _ => Err(Error::MsgError(res)),
-                },
-                _ => Err(Error::MsgError(res)),
-            },
+                }
+            }
             Err(err) => Err(err),
         }
     }
@@ -115,7 +124,9 @@ impl Browser {
             format!("http://127.0.0.1:9515/session/{}/url", session_id)
         };
 
-        let res = self.req(Post, post.as_str(), format!(r#"{{"url":"{}"}}"#, url).as_str());
+        let res = self.req(Post,
+                           post.as_str(),
+                           format!(r#"{{"url":"{}"}}"#, url).as_str());
         println!("URL {:?}", res);
         match res {
             Ok(_) => Ok(()),
@@ -137,7 +148,7 @@ impl Browser {
 
         let res = self.req(Delete, url.as_str(), "");
         self.session_id = None;
-        
+
         match res {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
@@ -152,18 +163,23 @@ impl Browser {
         if let None = self.session_id {
             return Ok(());
         }
-        
+
         let url = {
             let session_id = self.session_id.as_ref().unwrap();
             format!("http://127.0.0.1:9515/session/{}/elements", session_id)
         };
 
-        let res = self.req(Post, url.as_str(), format!(r#"{{"using":"css selector","value":{:?}}}"#, selector).as_str());
+        let res = self.req(Post,
+                           url.as_str(),
+                           format!(r#"{{"using":"css selector","value":{:?}}}"#, selector)
+                               .as_str());
         let res = match res {
-            Ok(res) => match serde_json::from_str::<Value>(&res) {
-                Ok(res) => res,
-                Err(err) => return Err(Error::JsonError(err)),
-            },
+            Ok(res) => {
+                match serde_json::from_str::<Value>(&res) {
+                    Ok(res) => res,
+                    Err(err) => return Err(Error::JsonError(err)),
+                }
+            }
             Err(err) => return Err(err),
         };
 
@@ -171,10 +187,12 @@ impl Browser {
             Some(&Value::String(ref eid)) => eid,
             _ => return Err(Error::MsgError("Element not found".to_owned())),
         };
-        
+
         let url = {
             let session_id = self.session_id.as_ref().unwrap();
-            format!("http://127.0.0.1:9515/session/{}/element/{}/click", session_id, eid)
+            format!("http://127.0.0.1:9515/session/{}/element/{}/click",
+                    session_id,
+                    eid)
         };
 
         let res = self.req(Post, url.as_str(), "");
@@ -188,18 +206,12 @@ impl Browser {
         if let Err(err) = self.url(format!("https://www.youtube.com/watch?v={}", vid).as_str()) {
             return Err(err);
         }
-        // if let Err(err) = self.click(".ytp-fullscreen-button.ytp-button") {
-        //     println!("CLICK ERR {:?}", err);
-        //     return Err(err);
-        // }
-        // self.click(".ytp-play-button.ytp-button")
         self.click(".ytp-fullscreen-button.ytp-button")
     }
 
     pub fn session_active(&self) -> bool {
         self.session_id.is_some()
     }
-
 }
 
 impl ::std::ops::Drop for Browser {
