@@ -56,7 +56,12 @@ impl Summoner {
             let _ = self.browser.show();
         }
 
-        let _ = self.browser.url(url);
+        match self.browser.url(url) {
+            Ok(_) => {}
+            Err(_) => {
+                let _ = self.browser.hide();
+            }
+        };
     }
 
     pub fn yt(&mut self, url: &str) {
@@ -65,7 +70,12 @@ impl Summoner {
             let _ = self.browser.show();
         }
 
-        let _ = self.browser.yt(url);
+        match self.browser.yt(url) {
+            Ok(_) => {}
+            Err(_) => {
+                let _ = self.browser.hide();
+            }
+        };
     }
 }
 

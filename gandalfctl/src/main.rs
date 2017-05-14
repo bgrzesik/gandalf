@@ -2,16 +2,16 @@
 extern crate gandalf;
 extern crate bincode;
 extern crate clap;
-extern crate pnet;
 
-use gandalf::IncommingMessage;
-use bincode::{serialize, Infinite};
-use std::net;
-use clap::{App, Arg, SubCommand, AppSettings};
 
 const BIND_SOCKET: (&'static str, u16) = ("0.0.0.0", 23442);
 
 fn main() {
+    use gandalf::IncommingMessage;
+    use bincode::{serialize, Infinite};
+    use std::net;
+    use clap::{App, Arg, SubCommand, AppSettings};
+
     let matches = App::new("Gandalf Announcer")
         .version("shitty-alpha-that-will-never-leave")
         .author("Bartłomiej Grzesik <grzechovsky@gmail.com>")

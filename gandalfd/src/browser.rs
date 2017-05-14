@@ -49,7 +49,7 @@ impl Browser {
                     return Err(Error::IoError(err));
                 }
 
-                println!("RESPONSE {}", buf);
+                println!("RESPONSE {:?} {}", res.status, buf);
                 Ok(buf)
             }
             Err(err) => {
@@ -114,6 +114,7 @@ impl Browser {
 
     pub fn url(&mut self, url: &str) -> Result<(), Error> {
         use self::hyper::Post;
+        use self::serde_json::Value;
 
         if let None = self.session_id {
             return Ok(());
@@ -129,13 +130,30 @@ impl Browser {
                            format!(r#"{{"url":"{}"}}"#, url).as_str());
         println!("URL {:?}", res);
         match res {
-            Ok(_) => Ok(()),
+            Ok(s) => {
+                match serde_json::from_str(&s) {
+                    Ok(Value::Object(val)) => {
+                        match val["status"] {
+                            Value::Number(ref v) => {
+                                if v.as_i64() == Some(0) {
+                                    Ok(())
+                                } else {
+                                    Err(Error::MsgError("Invalid status".to_owned()))
+                                }
+                            }
+                            _ => Err(Error::MsgError("Invalid status".to_owned())),
+                        }
+                    }
+                    _ => Err(Error::MsgError("Invalid response".to_owned())),
+                }
+            }
             Err(err) => Err(err),
         }
     }
 
     pub fn hide(&mut self) -> Result<(), Error> {
         use self::hyper::Delete;
+        use self::serde_json::Value;
 
         if let None = self.session_id {
             return Ok(());
@@ -150,7 +168,23 @@ impl Browser {
         self.session_id = None;
 
         match res {
-            Ok(_) => Ok(()),
+            Ok(s) => {
+                match serde_json::from_str(&s) {
+                    Ok(Value::Object(val)) => {
+                        match val["status"] {
+                            Value::Number(ref v) => {
+                                if v.as_i64() == Some(0) {
+                                    Ok(())
+                                } else {
+                                    Err(Error::MsgError("Invalid status".to_owned()))
+                                }
+                            }
+                            _ => Err(Error::MsgError("Invalid status".to_owned())),
+                        }
+                    }
+                    _ => Err(Error::MsgError("Invalid response".to_owned())),
+                }
+            }
             Err(err) => Err(err),
         }
     }

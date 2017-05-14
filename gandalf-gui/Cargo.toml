@@ -1,0 +1,14 @@
+[package]
+name = "gandalf-gui"
+version = "0.1.0"
+authors = ["Bartłomiej Grzesik <grzechovsky@gmail.com>"]
+
+[dependencies]
+imgui = { path = "../../imgui-rs" }
+imgui-glium-renderer = { path = "../../imgui-rs/imgui-glium-renderer" }
+glium = "0.16.0"
+bincode = "1.0.0-alpha4"
+gandalf = { path = ".." }
+
+[target.'cfg(windows)'.dependencies]
+kernel32-sys = "0.2.2"
