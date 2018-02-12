@@ -22,10 +22,10 @@ impl GandalfCtl {
     fn new() -> Self {
         use imgui::ImString;
         Self {
-            cmd: ImString::with_capacity(32),
-            url: ImString::with_capacity(32),
-            yt: ImString::with_capacity(32),
-            yte: ImString::with_capacity(32),
+            cmd: ImString::with_capacity(256),
+            url: ImString::with_capacity(256),
+            yt: ImString::with_capacity(256),
+            yte: ImString::with_capacity(256),
             ip: [237, 77, 7, 77],
         }
     }
